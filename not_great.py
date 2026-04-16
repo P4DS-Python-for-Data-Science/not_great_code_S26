@@ -1,9 +1,11 @@
+import pandas as pd 
+import numpy as np 
+import os 
+import json
+import re
+import matplotlib.pyplot as plt
 
-
-
-import pandas as pd, numpy as np, os, json, re,  matplotlib.pyplot as plt
 get_ipython().run_line_magic('matplotlib', 'inline')
-
 
 jsonData=[]
 with open('modcloth_final_data.json') as f:
@@ -17,7 +19,7 @@ def height_converter(x):
     if pd.isna(x): 
         return x
     else:
-        split_x=x.split('ft'); height_in_inches_converted_from_string=int(split_x[0])*12
+        split_x = x.spli t('ft'); height_in_inches_converted_from_string=int(split_x[0])*12
         if len(split_x)==2:
             if split_x[1]=='':
                 pass
@@ -38,10 +40,10 @@ i_p_df = pd.read_csv('inventory_parts.csv')
 p_and_c = i_p_df.merge(c,left_on='color_id',right_on='id',how='inner')
 pcs_df = p_and_c.merge(iv_df,left_on='inventory_id',right_on='id',how='inner')
 pcsiv_df = pcs_df.merge(s ,left_on='set_num',right_on='set_num',how='inner')
-data = pd.pivot_table(data=pcsiv_df,values='rgb',index='year',aggfunc="nunique")
+data = pd.pivot_table(data=pcsiv_df, values='rgb', index='year', \
+    aggfunc="nunique")
 plt.plot(data)
 plt.axvline(x=2004,c='r')
 plt.ylabel('unique colors per year')
 
-
-
+print("will this work?")
