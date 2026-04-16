@@ -20,12 +20,12 @@ def height_converter(x):
         return x
     else:
         split_x = x.split('ft')
-        height_in_str = int(split_x[0])*12
+        height_in_str = int(split_x[0]) * 12
         if len(split_x) == 2:
             if split_x[1] == '':
                 pass
             else:
-                height_in_str = height_in_str+int(split_x[1].split('in')[0])
+                height_in_str = height_in_str + int(split_x[1].split('in')[0])
         return height_in_str
 
 
