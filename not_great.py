@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 
-jsonData = []
+jsonData=[]
 with open('modcloth_final_data.json') as f:
     for line in f.readlines():
         jsonData.append(json.loads(line))
