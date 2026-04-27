@@ -1,47 +1,70 @@
+import json
+
+import matplotlib.pyplot as plt
+import pandas as pd
 
 
-
-import pandas as pd, numpy as np, os, json, re,  matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
-
-
-jsonData=[]
-with open('modcloth_final_data.json') as f:
-    for line in f.readlines():
-        jsonData.append(json.loads(line))
-modcloth_data = pd.DataFrame(jsonData)
+def load_modcloth_data(path='modcloth_small_data.json'):
+    """Load line-delimited JSON into a DataFrame."""
+    with open(path, encoding='utf8') as infile:
+        records = [json.loads(line) for line in infile]
+    return pd.DataFrame(records)
 
 
-def height_converter(x):
-    '''converts heights'''
-    if pd.isna(x): 
-        return x
-    else:
-        split_x=x.split('ft'); height_in_inches_converted_from_string=int(split_x[0])*12
-        if len(split_x)==2:
-            if split_x[1]=='':
-                pass
-            else:
-                height_in_inches_converted_from_string=height_in_inches_converted_from_string+int(split_x[1].split('in')[0])
+def height_converter(height_str):
+    """Convert a height string like '5ft 7in' to inches."""
+    if pd.isna(height_str):
+        return height_str
+
+    split_height = height_str.split('ft')
+    height_in_inches = int(split_height[0]) * 12
+    if len(split_height) == 2 and split_height[1] != '':
+        height_in_inches += int(split_height[1].split('in')[0])
+    return height_in_inches
 
 
+def build_color_trend_by_year():
+    """Build a year-indexed table of distinct color counts."""
+    sets_df = pd.read_csv('sets.csv')
+    colors_df = pd.read_csv('colors.csv')
+    inventories_df = pd.read_csv('inventories.csv')
+    inventory_parts_df = pd.read_csv('inventory_parts.csv')
 
-        return height_in_inches_converted_from_string
+    parts_with_colors = inventory_parts_df.merge(
+        colors_df,
+        left_on='color_id',
+        right_on='id',
+        how='inner',
+    )
+    parts_with_inventory = parts_with_colors.merge(
+        inventories_df,
+        left_on='inventory_id',
+        right_on='id',
+        how='inner',
+    )
+    merged_df = parts_with_inventory.merge(
+        sets_df,
+        on='set_num',
+        how='inner',
+    )
 
-modcloth_data['height']=modcloth_data['height'].apply(height_converter)
+    return pd.pivot_table(
+        data=merged_df,
+        values='rgb',
+        index='year',
+        aggfunc='nunique',
+    )
 
 
-s  = pd.read_csv('sets.csv')
-c = pd.read_csv('colors.csv')
-iv_df = pd.read_csv('inventories.csv')
-i_p_df = pd.read_csv('inventory_parts.csv')
-p_and_c = i_p_df.merge(c,left_on='color_id',right_on='id',how='inner')
-pcs_df = p_and_c.merge(iv_df,left_on='inventory_id',right_on='id',how='inner')
-pcsiv_df = pcs_df.merge(s ,left_on='set_num',right_on='set_num',how='inner')
-data = pd.pivot_table(data=pcsiv_df,values='rgb',index='year',aggfunc="nunique")
-plt.plot(data)
-plt.axvline(x=2004,c='r')
-plt.ylabel('unique colors per year')
+def main():
+    modcloth_data = load_modcloth_data()
+    modcloth_data['height'] = modcloth_data['height'].apply(height_converter)
+
+    color_trend = build_color_trend_by_year()
+    plt.plot(color_trend)
+    plt.axvline(x=2004, c='r')
+    plt.ylabel('unique colors per year')
 
 
-
+if __name__ == '__main__':
+    main()
